@@ -27,6 +27,7 @@ class Rect {
     this.width = widthrect;
     this.height = heightrect;
     this.isOut = false;
+    this.isGameOver = false;
   }
 
   drawRect() {
@@ -53,7 +54,6 @@ class Line {
     this.xsto = xstop;
     this.y = yvalue;
     this.isGameOver = false;
-    this.isWon = false;
   }
 
   drawLine() {
@@ -86,7 +86,9 @@ var allLines3 = [
 
 //set an interval and push a line with a random xsto and y into the allLines array
 //allLines 1
-setInterval(function () {
+var intervalId;
+function setInterval1() {
+intervalId = setInterval(function () {
 
   allLines.push(new Line(-50, 0, Math.random()*canvasWidth));
   allLines.push(new Line(-20, 0, Math.random()*canvasWidth));
@@ -98,10 +100,12 @@ setInterval(function () {
     return oneLine.xsta < canvasWidth;
   })
 
-}, 1000);
+}, 1000)};
 
 //allLines 2
-setInterval(function () {
+function setInterval2() {
+
+intervalId = setInterval(function () {
   allLines2.push(new Line(-50, 0, Math.random()*canvasWidth));
   allLines2.push(new Line(-50, 0, Math.random()*canvasWidth));
   allLines2.push(new Line(-50, 0, Math.random()*canvasWidth));
@@ -114,11 +118,12 @@ setInterval(function () {
     return oneLine.xsta < canvasWidth;
   })
 
-}, 800);
+}, 800)};
 
 
 //allLines3
-setInterval(function () {
+function setInterval3() {
+  intervalId = setInterval(function () {
 
   allLines3.push(new Line(-50, 0, Math.random()*canvasWidth));
   allLines3.push(new Line(-20, 0, Math.random()*canvasWidth));
@@ -133,7 +138,7 @@ setInterval(function () {
     return oneLine.xsta < canvasWidth;
   })
 
-}, 600);
+}, 600)};
 
 //background sliding
 
@@ -177,18 +182,21 @@ $(".level1").click(function () {
   player.level = 1;
   $(".intro-game").hide();
   drawingLoop();
+  setInterval1();
 })
 
 $(".level2").click(function () {
   player.level = 2;
   $(".intro-game").hide();
   drawingLoop();
+  setInterval2();
 })
 
 $(".level3").click(function () {
   player.level = 3;
   $(".intro-game").hide();
   drawingLoop();
+  setInterval3();
 })
 
 
@@ -235,7 +243,6 @@ function drawingLoop () {
       
     });
 
-    //add the score +10 when the player reaches a rectangle
 
     //you win when there is no rectangle left
     
@@ -266,11 +273,13 @@ function drawingLoop () {
     if (score < 1) {
       gameOver.drawMe();
       Line.isGameOver = true;
+      restartButton();
     }
 
      
     if (allRectangles.length === 0){
       youWin.drawMe();
+      Rect.isGameOver = true;
       restartButton();
     }
 
@@ -278,14 +287,13 @@ function drawingLoop () {
       $(".restart").css('display', 'block');
     }
 
-    
 
     // allLines = allLines.filter(function (oneLine) {
     //   return;
     // });
   
   requestAnimationFrame(function () {
-    if (!Line.isGameOver && !Line.isWon){
+    if (!Line.isGameOver && !Rect.isGameOver){
     drawingLoop();
   } else {
     return;
@@ -387,8 +395,7 @@ var gameOver = {
       ctx.font = "250 70px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif";
       ctx.fillStyle = "deepblue";
       ctx.fillText("Game Over", 175, 325);   
-    
-      ctx.fillText("Click on this screen to play again", 175, 500);
+
   },
 }
 
@@ -402,7 +409,6 @@ var youWin = {
     ctx.fillStyle = "deepblue";
     ctx.fillText("You won !!!", 175, 325);   
 
-    gameOverMusic.play(); 
   }
 }
 
