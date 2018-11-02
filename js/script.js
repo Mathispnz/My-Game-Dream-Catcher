@@ -31,7 +31,7 @@ class Rect {
   }
 
   drawRect() {
-  ctx.strokeStyle = "white";
+  ctx.strokeStyle = "#879bff";
   // ctx.borderRadiusStyle = "5px";
   ctx.strokeRect(this.x, this.y, this.width, this.height);
   };
@@ -61,6 +61,7 @@ class Line {
     ctx.lineWidth = 2; //considered as the height of the line
     ctx.moveTo(this.xsta, this.y);
     ctx.lineTo(this.xsto, this.y);
+    ctx.strokeStyle = "white";
     ctx.stroke();
     //make the lines move
     this.xsta += 5;
