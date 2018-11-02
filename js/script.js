@@ -2,21 +2,16 @@ var canvas = document.querySelector(".dream-catcher");
 var ctx = canvas.getContext("2d");
 var canvasWidth = 650;
 
-//create a play game introduction first screen
-// var introPlay = {
-//   drawMe : function introPlay() {
-//     ctx.font = "70px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif";
-//     ctx.fillStyle = "white";
-//     ctx.fillText("Play Game", 300, 325);
-//   }
-// }
-
 // first position of the circle (player)
 var player = {
   x: 325,
   y: 325,
   r: 25,
   level: 1,
+  friction: 0.8,
+  maxSpeed: 8,
+  vX: 0,
+  vY: 0,
 };
 
 //class to draw the rectangles in a different place
@@ -142,7 +137,6 @@ function setInterval3() {
 }, 600)};
 
 //background sliding
-
   var backgroundImg = new Image();
   backgroundImg.src = "./images/backgroundstar.jpg";
 
@@ -174,16 +168,15 @@ function drawCircle () {
   ctx.beginPath();
 }
 
-// $(".intro-game").click(function () {
-//   $(".intro-game").hide();
-//   drawingLoop();
-// })
-
+//relate the allLines arrays to the kind of level that the player chooses
 $(".level1").click(function () {
   player.level = 1;
   $(".intro-game").hide();
   drawingLoop();
   setInterval1();
+  setTimeout(function () {
+    directions();
+  }, 1000)
 })
 
 $(".level2").click(function () {
@@ -191,6 +184,9 @@ $(".level2").click(function () {
   $(".intro-game").hide();
   drawingLoop();
   setInterval2();
+  setTimeout(function () {
+    directions();
+  }, 1000)
 })
 
 $(".level3").click(function () {
@@ -198,6 +194,9 @@ $(".level3").click(function () {
   $(".intro-game").hide();
   drawingLoop();
   setInterval3();
+  setTimeout(function () {
+    directions();
+  }, 1000)
 })
 
 
@@ -205,6 +204,7 @@ $(".level3").click(function () {
 function drawingLoop () {
   ctx.clearRect(0, 0, 650, 650);
 
+  //draw the sky full of stars background
   background.drawMe();
 
     //draw the circle which represents the player
@@ -216,7 +216,7 @@ function drawingLoop () {
       oneRect.drawRect();
     });
 
-    //draw the lines
+    //draw the lines (depending on the level)
     if (player.level === 1) {
     allLines.forEach(function(oneLine) {
       oneLine.drawLine();
@@ -230,24 +230,7 @@ function drawingLoop () {
         oneLine.drawLine();
       })};
 
-    allRectangles.forEach(oneRect => {
-      if (!Rect.isOut && RectCircleColliding(player, oneRect)){
-          score += 5
-       }
-    })
-
-
-    //delete one rect when the player reaches it 
-    
-    allRectangles = allRectangles.filter(function (oneRect) {
-      return !RectCircleColliding(player, oneRect);
-      
-    });
-
-
-    //you win when there is no rectangle left
-    
-
+    //collision function depending on the level
     if (player.level === 1) {
       allLines.forEach(function(oneLine) {
         if (collisionLines(player, oneLine)){
@@ -267,6 +250,26 @@ function drawingLoop () {
         };
       })};
 
+    
+    //delete one rect when the player reaches it  
+    allRectangles = allRectangles.filter(function (oneRect) {
+      return !RectCircleColliding(player, oneRect);
+      
+    });
+
+    //add 5 to the score when the player reaches a square
+    allRectangles.forEach(oneRect => {
+      if (!Rect.isOut && RectCircleColliding(player, oneRect)){
+          score += 5
+       }
+    })
+  
+    //direction friction
+    player.vX *= player.friction;
+    player.x -= player.vX;
+    player.vY *= player.friction;
+    player.y -= player.vY;
+
     //upload score
     $(".score").html(score);
 
@@ -277,21 +280,18 @@ function drawingLoop () {
       restartButton();
     }
 
-     
+    //you win when there is no rectangle left
     if (allRectangles.length === 0){
       youWin.drawMe();
       Rect.isGameOver = true;
       restartButton();
     }
 
+    //display the restart button on the game over and you win screens
     function restartButton (){
       $(".restart").css('display', 'block');
     }
 
-
-    // allLines = allLines.filter(function (oneLine) {
-    //   return;
-    // });
   
   requestAnimationFrame(function () {
     if (!Line.isGameOver && !Rect.isGameOver){
@@ -299,12 +299,9 @@ function drawingLoop () {
   } else {
     return;
   }
-
   });
 };
 
-// call the everything-drawing loop
-// drawingLoop();
 
 //collision function between the squares and the circles (player)
 function RectCircleColliding(circle,rect){
@@ -325,10 +322,7 @@ function RectCircleColliding(circle,rect){
 };
 
 
-
-
 //collision function between the lines and the player
-
 var score = 50; 
 function collisionLines (circle, line) {
   var distX = Math.abs(circle.x - line.xsto);
@@ -362,28 +356,41 @@ function collisionLines (circle, line) {
   
   // console.log(score);
   // return (dx*dx+dy*dy<=(circle.r*circle.r));
-  
 }
 
 
+//directions
 
+var directions = function () {
 document.onkeydown = function (event) {
   switch (event.keyCode) {
 
     case 37: 
-      player.x -= 10; //left arrow
+      if (player.x < 35) {
+        player.x = 35;
+      }
+      player.vX = 5;  //left arrow
       break;
     case 38: //up arrow
-      player.y -= 10;
+      if (player.y < 35) {
+        player.y = 35;
+      }
+      player.vY = 5;
       break;
     case 39: //right arrow
-      player.x += 10;
+      if (player.x > 615) {
+        player.x = 615;
+      }
+      player.vX = -5;
       break;
     case 40: //down arrow
-      player.y += 10;
+      if (player.y > 615) {
+        player.y = 615;
+      }
+      player.vY = -5;
       break;
   }
-};
+}};
 
 
 
